@@ -1,30 +1,32 @@
 import React from "react";
+import { Data, makeTodo } from './data';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { ListItem } from './ListItem';
 
-// tslint:disable-next-line
-const debug = (msg: string) => (e:any) => console.log(msg, e);
+// tslint:disable no-console
+const debug = (msg: string) => () => console.log(msg);
 
-const todos = [
-  {
-    completed: false,
-    id: 'abdcd',    
-    title: 'Go Shopping'
-  },
-  { 
-    completed: true,
-    id: 'xwdfs',
-    title: 'Pay Visa'
-  }
-];
+interface State {
+  data: Data
+};
 
-export class Main extends React.Component<{}, {}> {
+export class Main extends React.PureComponent<{}, State> {
+  state = {
+    data: new Data([makeTodo('Pay Visa'), makeTodo('Go Shopping')])
+  };
+
+  addTodo = (title: string) => {
+    this.state.data.addTodo(title);
+    this.setState({});
+  };
+
   render() {
+    debug('rendering main component')();
     return (
       <div className="todomvc-wrapper">
         <section className="todoapp">
-          <Header onSubmit={debug('submitted')} />
+          <Header onSubmit={this.addTodo} />
           
           <section className="main">
             <input
@@ -32,20 +34,19 @@ export class Main extends React.Component<{}, {}> {
               id="toggle-all"
               type="checkbox"
               checked={false}
-              onChange={debug("toggle all")}
+              onChange={this.state.data.toggleAll}
             />
             <label htmlFor="toggle-all">Mark all as complete</label>
 
             {/* TODO list */}
             <ul className="todo-list">
 
-            {todos.map(t => (
+            {this.state.data.todos.map(t => (
               <ListItem 
                 key={t.id}
                 item={t}
-                handleToggle={debug(`Toggled: ${JSON.stringify(t)}`)}
-                handleDestroy={debug(`Destroyed: ${JSON.stringify(t)}`)}
-                handleEdit={debug(`Edited: ${JSON.stringify(t)}`)}
+                handleDestroy={this.state.data.deleteTodo}
+                handleEdit={this.state.data.updateTodo}
               />
             ))}
 
@@ -54,8 +55,8 @@ export class Main extends React.Component<{}, {}> {
         </section>
 
         <Footer 
-          todoCount={1} 
-          clearCompleted={debug('clear completed')}
+          todoCount={this.state.data.todos.length} 
+          clearCompleted={this.state.data.deleteCompleted}
         />
       </div>
     );
